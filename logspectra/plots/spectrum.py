@@ -6,8 +6,7 @@ import numpy as np
 from matplotlib.axes import Axes
 
 from logspectra.histogram import Histogram
-from logspectra.interval import Interval
-from logspectra.utils import Float
+from logspectra.types import Float
 
 
 def get_spectrum_limits(sample_rate: int, cutoff: Float) -> Tuple[Tuple[float, float], List[float]]:
@@ -45,53 +44,6 @@ def plot_spectrum(
     ax.set_title(title)
 
 
-def compare_histogram_and_interval(
-    histogram: Histogram,
-    interval: Interval,
-    annotation: Optional[str] = None,
-    color_histogram: str = "gray",
-    color_interval: str = "yellow",
-) -> None:
-    if not interval:
-        raise ValueError("Interval must be non-empty")
-
-    plt.figure(figsize=(9, 4))
-    ax = plt.gca()
-    ax.stairs(histogram.values, histogram.edges, fill=True, color=color_histogram, alpha=0.7, label="histogram")
-    for i, edge in enumerate(histogram.edges):
-        ax.axvline(edge, color=color_histogram, linewidth=0.5, alpha=0.5)
-        if i < len(histogram):
-            x = (edge + histogram.edges[i + 1]) / 2
-            y = histogram.values[i]
-            plt.annotate(f"{y:2g}", (x, y), ha="center", color="#404040")
-
-    rebin = histogram.rebin(interval)
-    value = rebin.values[0]
-    interval_string = ", ".join(map(str, interval))
-    ax.stairs(
-        rebin.values,
-        rebin.edges,
-        fill=True,
-        color=color_interval,
-        alpha=0.7,
-        label=f"interval $[{interval_string}]$",
-    )
-
-    midpoint = interval.midpoint
-    assert midpoint is not None
-
-    if annotation is None:
-        annotation = f"{value:2g}"
-
-    if annotation:
-        xy = (float(midpoint), float(value))
-        plt.annotate(annotation, xy, ha="center", color="#C0C040")
-
-    plt.title("Matching a single interval")
-    plt.legend()
-    plt.show()
-
-
 def compare_spectra(
     spectra: Sequence[Histogram],
     sample_rate: int,
@@ -115,8 +67,17 @@ def compare_spectra(
     if edge_colors is not None and len(edge_colors) != len(spectra):
         raise ValueError("Number of edge colors must match number of spectra")
 
-    _, axes = plt.subplots(1, len(spectra), figsize=figsize, squeeze=False)
+    _, axes = plt.subplots(
+        1,
+        len(spectra),
+        figsize=figsize,
+        squeeze=False,
+        constrained_layout=True,
+    )
     xrange, xticks = get_spectrum_limits(sample_rate, cutoff)
+
+    y_max = max(np.max(spectrum.densities) for spectrum in spectra if len(spectrum.densities) > 0)
+    y_lim = (0, y_max * 1.1)
 
     for i, spectrum in enumerate(spectra):
         ax = axes[0, i]
@@ -133,5 +94,6 @@ def compare_spectra(
             edge_color=edge_color,
             draw_verticals=draw_verticals,
         )
+        ax.set_ylim(*y_lim)
 
     plt.show()

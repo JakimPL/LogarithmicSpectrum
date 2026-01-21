@@ -5,7 +5,7 @@ from scipy.fft import rfft, rfftfreq
 
 from logspectra.config import FFTConfig, Sampling
 from logspectra.histogram import Histogram
-from logspectra.utils import to_log_even_bands
+from logspectra.spectrum.utils import to_log_even_bands
 from logspectra.wave import Wave, get_wave_array
 
 
@@ -30,7 +30,7 @@ def calculate_spectrum(
     return Histogram(edges=bands, values=energy)
 
 
-def calculate_log_even_spectrum(
+def calculate_log_spectrum(
     wave: Union[np.ndarray, Wave],
     fft_config: FFTConfig,
     sampling: Sampling,

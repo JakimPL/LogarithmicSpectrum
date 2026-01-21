@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 from IPython.display import display
 from ipywidgets import FloatSlider, IntSlider, SelectionSlider, interact
 
-from logspectra.config import FFTConfig, FFTSize, SampleRate, Sampling, WaveDefinition
-from logspectra.example import Example
+from logspectra.config import FFTConfig, Sampling, WaveDefinition
+from logspectra.interactive.example import Example
+from logspectra.types import FFTSize, SampleRate
 
 
 def interactive_example(wave_definition: WaveDefinition) -> None:
@@ -55,7 +56,6 @@ def interactive_example(wave_definition: WaveDefinition) -> None:
         description="Sample Rate (Hz):",
         style={"description_width": "initial"},
         layout=widgets.Layout(width="600px"),
-        continuous_update=False,
     )
 
     fft_size_widget = SelectionSlider(
@@ -64,7 +64,6 @@ def interactive_example(wave_definition: WaveDefinition) -> None:
         description="FFT Size:",
         style={"description_width": "initial"},
         layout=widgets.Layout(width="600px"),
-        continuous_update=False,
     )
 
     cutoff_widget = FloatSlider(
@@ -75,7 +74,6 @@ def interactive_example(wave_definition: WaveDefinition) -> None:
         description="Cutoff (Hz):",
         style={"description_width": "initial"},
         layout=widgets.Layout(width="600px"),
-        continuous_update=False,
     )
 
     log_even_widget = IntSlider(
@@ -83,10 +81,9 @@ def interactive_example(wave_definition: WaveDefinition) -> None:
         max=128,
         step=1,
         value=80,
-        description="Log-Even Bins:",
+        description="Log-Even Bins (Log-Even only):",
         style={"description_width": "initial"},
         layout=widgets.Layout(width="600px"),
-        continuous_update=False,
     )
 
     bins_per_octave_widget = IntSlider(
@@ -94,10 +91,9 @@ def interactive_example(wave_definition: WaveDefinition) -> None:
         max=36,
         step=1,
         value=12,
-        description="Bins per Octave:",
+        description="Bins per Octave (CQT only):",
         style={"description_width": "initial"},
         layout=widgets.Layout(width="600px"),
-        continuous_update=False,
     )
 
     display(output)  # type: ignore

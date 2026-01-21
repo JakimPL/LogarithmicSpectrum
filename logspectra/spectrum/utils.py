@@ -1,18 +1,11 @@
-from typing import TypeAlias, Union
-
 import numpy as np
 
 from logspectra.config import FFTConfig
 from logspectra.constants import BINS_PER_OCTAVE
-
-Float: TypeAlias = Union[float, np.floating]
-
-
-def is_increasing(array: np.ndarray) -> bool:
-    return bool(np.all(np.diff(array) > 0))
+from logspectra.types import Float
 
 
-def rectangle(length: int) -> np.ndarray:
+def rectangle_window(length: int) -> np.ndarray:
     return np.ones(length, dtype=float)
 
 

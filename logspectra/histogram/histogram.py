@@ -7,8 +7,8 @@ from typing import Iterator, List, Tuple, Union
 
 import numpy as np
 
-from logspectra.interval import Interval
-from logspectra.utils import is_increasing
+from logspectra.histogram.interval import Interval
+from logspectra.histogram.utils import is_increasing
 
 
 @dataclass

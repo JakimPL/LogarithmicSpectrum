@@ -4,7 +4,8 @@ from typing import List, NamedTuple, Optional, Self
 
 import numpy as np
 
-from logspectra.utils import Float, is_increasing
+from logspectra.histogram.utils import is_increasing
+from logspectra.types import Float
 
 
 class Interval(NamedTuple):

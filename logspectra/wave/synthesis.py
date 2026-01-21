@@ -1,14 +1,8 @@
-from typing import NamedTuple, Union
-
 import numpy as np
 
 from logspectra.config import Sampling, WaveDefinition
-from logspectra.utils import Float
-
-
-class Wave(NamedTuple):
-    x: np.ndarray
-    y: np.ndarray
+from logspectra.types import Float
+from logspectra.wave.wave import Wave
 
 
 def sine(
@@ -51,15 +45,3 @@ def synthesize_wave(
     x: np.ndarray = get_domain(sampling)
     y: np.ndarray = compose_wave(x, wave_definition)
     return Wave(x, y)
-
-
-def get_wave_array(wave: Union[np.ndarray, Wave]) -> np.ndarray:
-    if isinstance(wave, Wave):
-        wave = wave.y
-    elif not isinstance(wave, np.ndarray):
-        raise TypeError("wave must be either a numpy array or a Wave instance")
-
-    if wave.ndim != 1:
-        raise ValueError("wave must be a one-dimensional array")
-    
-    return wave

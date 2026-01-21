@@ -6,7 +6,8 @@ import numpy as np
 from logspectra.config import FFTConfig, Sampling
 from logspectra.constants import BINS_PER_OCTAVE
 from logspectra.histogram import Histogram
-from logspectra.utils import Float, rectangle
+from logspectra.spectrum.utils import rectangle_window
+from logspectra.types import Float
 from logspectra.wave import Wave, get_wave_array
 
 
@@ -83,7 +84,7 @@ def calculate_cqt_spectrum(
         n_bins=n_bins,
         bins_per_octave=bins_per_octave,
         hop_length=hop_length,
-        window=rectangle,
+        window=rectangle_window,
     )
 
     energy: np.ndarray = np.mean(np.square(np.abs(cqt)), axis=1)
