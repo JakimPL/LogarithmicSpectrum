@@ -1,0 +1,1 @@
+BINS_PER_OCTAVE = 12

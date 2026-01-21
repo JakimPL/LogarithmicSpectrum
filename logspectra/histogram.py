@@ -7,8 +7,8 @@ from typing import Iterator, List, Tuple, Union
 
 import numpy as np
 
-from interval import Interval
-from utils import is_increasing
+from logspectra.interval import Interval
+from logspectra.utils import is_increasing
 
 
 @dataclass
@@ -119,16 +119,19 @@ class Histogram:
     @cache
     def width(self, i: int) -> np.floating:
         """Width of the i-th bin."""
-        return self.widths[i]
+        width: np.floating = self.widths[i]
+        return width
 
     @cache
     def density(self, i: int) -> np.floating:
         """Density in the i-th bin: value / interval length."""
         interval = self.interval(i)
         if not interval:
-            return self.values.dtype.type(0.0)
+            zero: np.floating = self.values.dtype.type(0.0)
+            return zero
 
-        return self.values[i] / interval.length
+        density: np.floating = self.values[i] / interval.length
+        return density
 
     @cached_property
     def densities(self) -> np.ndarray:

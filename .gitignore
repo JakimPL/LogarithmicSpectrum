@@ -1,0 +1,16 @@
+ __pycache__/
+.ipynb_checkpoints/
+.mypy_cache/
+.pytest_cache/
+.idea/
+.vscode/
+.github/
+.venv/
+
+*.pyc
+*.pyo
+
+**/*.idea
+**/*.vscode/**
+**/*.ipynb_checkpoints/**
+**/*__pycache__/**

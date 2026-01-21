@@ -1,17 +1,18 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 from matplotlib.axes import Axes
 
-from histogram import Histogram
-from interval import Interval
+from logspectra.histogram import Histogram
+from logspectra.interval import Interval
+from logspectra.utils import Float
 
 
-def get_spectrum_limits(sample_rate: int, cutoff: float) -> Tuple[Tuple[float, float], List[float]]:
-    xticks = [2.0**k * cutoff for k in range(int(np.log2(sample_rate / cutoff)))]
-    xrange = cutoff, 0.5 * sample_rate
+def get_spectrum_limits(sample_rate: int, cutoff: Float) -> Tuple[Tuple[float, float], List[float]]:
+    xticks = [float(2.0**k * cutoff) for k in range(int(np.log2(sample_rate / cutoff)))]
+    xrange = float(cutoff), 0.5 * sample_rate
     return xrange, xticks
 
 
@@ -90,23 +91,43 @@ def compare_histogram_and_interval(
 
 
 def compare_spectra(
-    spectrum1: Histogram,
-    spectrum2: Histogram,
+    spectra: Sequence[Histogram],
     sample_rate: int,
-    cutoff: float,
-    title1: str,
-    title2: str,
-    color1: str = "green",
-    color2: str = "gray",
-    edge_color1: str = "darkgreen",
-    edge_color2: str = "black",
+    cutoff: Float,
+    titles: Sequence[str],
+    colors: Optional[Sequence[str]] = None,
+    edge_colors: Optional[Sequence[str]] = None,
 ) -> None:
     """Compare two spectra side by side."""
-    _, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+    if not len(spectra):
+        raise ValueError("At least one spectrum is required")
+
+    if len(spectra) != len(titles):
+        raise ValueError("Number of spectra and titles must match")
+
+    if colors is not None and len(colors) != len(spectra):
+        raise ValueError("Number of colors must match number of spectra")
+
+    if edge_colors is not None and len(edge_colors) != len(spectra):
+        raise ValueError("Number of edge colors must match number of spectra")
+
+    _, axes = plt.subplots(1, len(spectra), figsize=(12, 4), squeeze=False)
     xrange, xticks = get_spectrum_limits(sample_rate, cutoff)
 
-    plot_spectrum(ax1, spectrum1, xrange, xticks, title1, color=color1, edge_color=edge_color1)
-    plot_spectrum(ax2, spectrum2, xrange, xticks, title2, color=color2, edge_color=edge_color2)
+    for i, spectrum in enumerate(spectra):
+        ax = axes[0, i]
+        title = titles[i]
+        color = colors[i] if colors is not None and i < len(colors) else "blue"
+        edge_color = edge_colors[i] if edge_colors is not None and i < len(edge_colors) else color
+        plot_spectrum(
+            ax,
+            spectrum,
+            xrange,
+            xticks,
+            title,
+            color=color,
+            edge_color=edge_color,
+        )
 
     plt.tight_layout()
     plt.show()

@@ -1,14 +1,18 @@
+from typing import Union
+
 import librosa
 import numpy as np
 
-from constants import BINS_PER_OCTAVE, C1_FREQUENCY
-from histogram import Histogram
-from utils import rectangle
+from logspectra.config import FFTConfig, Sampling
+from logspectra.constants import BINS_PER_OCTAVE
+from logspectra.histogram import Histogram
+from logspectra.utils import Float, rectangle
+from logspectra.wave import Wave, get_wave_array
 
 
 def calculate_nbins(
+    cutoff: Float,
     sample_rate: int,
-    cutoff: float = C1_FREQUENCY,
     bins_per_octave: int = BINS_PER_OCTAVE,
 ) -> int:
     """Calculate the number of CQT bins needed to cover the frequency range up to Nyquist."""
@@ -39,13 +43,23 @@ def normalize_cqt_energy(
 
 
 def calculate_cqt_spectrum(
-    wave: np.ndarray,
-    sample_rate: int,
-    cutoff: float = C1_FREQUENCY,
-    bins_per_octave: int = BINS_PER_OCTAVE,
+    wave: Union[np.ndarray, Wave],
+    fft_config: FFTConfig,
+    sampling: Sampling,
 ) -> Histogram:
     """Calculate the Constant-Q Transform (CQT) spectrum of a wave."""
-    n_bins = calculate_nbins(sample_rate, cutoff, bins_per_octave)
+    if not isinstance(fft_config, FFTConfig):
+        raise TypeError("fft_config must be an instance of FFTConfig")
+
+    if not isinstance(sampling, Sampling):
+        raise TypeError("sampling must be an instance of Sampling")
+
+    wave = get_wave_array(wave)
+    sample_rate: int = sampling.rate
+    cutoff: float = float(fft_config.cutoff)
+    bins_per_octave: int = fft_config.bins_per_octave
+
+    n_bins = calculate_nbins(cutoff, sample_rate, bins_per_octave)
     hop_length = len(wave) + 1  # a single frame
     cqt = librosa.cqt(
         wave,
