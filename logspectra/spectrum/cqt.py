@@ -11,30 +11,41 @@ from logspectra.types import Float
 from logspectra.wave import Wave, get_wave_array
 
 
-def get_max_allowed_bins(
-    cutoff: Float,
-    sample_rate: int,
-    bins_per_octave: int = BINS_PER_OCTAVE,
-) -> int:
-    """Calculate the maximum number of CQT bins that won't exceed Nyquist frequency."""
-    nyquist = sample_rate / 2.0
-    max_octaves = np.log2(nyquist / cutoff)
-    max_bins = int(np.floor(max_octaves * bins_per_octave))
-    return max_bins
-
-
 def calculate_nbins(
     cutoff: Float,
     sample_rate: int,
     bins_per_octave: int = BINS_PER_OCTAVE,
 ) -> int:
-    """Calculate the number of CQT bins needed to cover the frequency range up to Nyquist."""
+    """
+    Calculate the number of CQT bins needed to cover
+    the frequency range up to Nyquist.
+
+    Args:
+        cutoff: Minimum frequency in Hz.
+        sample_rate: Sampling rate in Hz.
+        bins_per_octave: Number of bins per octave.
+
+    Returns:
+        Number of bins (floored).
+    """
     nyquist = sample_rate / 2.0
     n_octaves = np.log2(nyquist / cutoff)
-    return int(np.ceil(n_octaves * bins_per_octave))
+    return int(np.floor(n_octaves * bins_per_octave))
 
 
 def convert_midpoints_to_edges(midpoints: np.ndarray) -> np.ndarray:
+    """
+    Convert bin center frequencies to bin edges using geometric mean.
+
+    For logarithmically-spaced frequencies, computes edges as the geometric mean
+    of adjacent midpoints. First and last edges are extrapolated.
+
+    Args:
+        midpoints: Array of bin center frequencies.
+
+    Returns:
+        Array of n + 1 bin edges where n = len(midpoints).
+    """
     edges: np.ndarray = np.empty(len(midpoints) + 1)
     edges[1:-1] = np.sqrt(midpoints[:-1] * midpoints[1:])
     edges[0] = midpoints[0] / np.sqrt(midpoints[1] / midpoints[0])
@@ -48,7 +59,21 @@ def normalize_cqt_energy(
     sample_rate: int,
     bins_per_octave: int = BINS_PER_OCTAVE,
 ) -> np.ndarray:
-    """A rough CQT energy normalization by the wavelet lengths."""
+    """
+    Normalize CQT energy by wavelet lengths.
+
+    Applies a rough normalization based on the quality factor Q and wavelet lengths
+    to compensate for varying window sizes across frequency bins.
+
+    Args:
+        energy: Raw CQT energy values.
+        frequencies: Center frequencies for each bin.
+        sample_rate: Sampling rate in Hz.
+        bins_per_octave: Number of bins per octave.
+
+    Returns:
+        Normalized energy values.
+    """
     q = 1 / (2 ** (1 / bins_per_octave) - 1)
     wavelet_lengths = np.ceil(q * sample_rate / frequencies)
     energy_scaled: np.ndarray = 2.0 * energy / wavelet_lengths
@@ -61,7 +86,25 @@ def calculate_cqt_spectrum(
     sampling: Sampling,
     n_bins: Optional[int] = None,
 ) -> Histogram:
-    """Calculate the Constant-Q Transform (CQT) spectrum of a wave."""
+    """
+    Calculate the Constant-Q Transform (CQT) spectrum of a wave.
+
+    Computes the CQT with logarithmically-spaced frequency bins,
+    with a constant Q factor (ratio of center frequency to bandwidth)
+    across all bins.
+
+    Args:
+        wave: Input wave as array or Wave object.
+        fft_config: FFT configuration (cutoff, bins_per_octave).
+        sampling: Sampling configuration (rate).
+        n_bins: Number of CQT bins. If None, automatically calculated to reach Nyquist.
+
+    Returns:
+        Histogram with log-spaced frequency edges and normalized CQT energy values.
+
+    Raises:
+        TypeError: If fft_config or sampling have incorrect types.
+    """
     if not isinstance(fft_config, FFTConfig):
         raise TypeError("fft_config must be an instance of FFTConfig")
 
@@ -74,8 +117,6 @@ def calculate_cqt_spectrum(
     bins_per_octave: int = fft_config.bins_per_octave
 
     n_bins = n_bins or calculate_nbins(cutoff, sample_rate, bins_per_octave)
-    n_bins = min(n_bins, get_max_allowed_bins(cutoff, sample_rate, bins_per_octave))
-
     hop_length = len(wave) + 1  # a single frame
     cqt = librosa.cqt(
         wave,
