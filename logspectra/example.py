@@ -6,6 +6,7 @@ from logspectra.config import FFTConfig, Sampling, WaveDefinition
 from logspectra.cqt import calculate_cqt_spectrum
 from logspectra.fft import calculate_log_even_spectrum, calculate_spectrum
 from logspectra.histogram import Histogram
+from logspectra.plots import compare_spectra
 from logspectra.wave import Wave, synthesize_wave
 
 
@@ -38,4 +39,22 @@ class Example(BaseModel):
             wave or self.wave(),
             self.fft_config,
             self.sampling,
+        )
+
+    def compare(
+        self,
+        wave: Optional[Wave] = None,
+    ) -> None:
+        wave = wave or self.wave()
+        spectrum = self.spectrum(wave)
+        log_even_spectrum = self.log_even_spectrum(wave)
+        cqt_spectrum = self.cqt_spectrum(wave)
+        compare_spectra(
+            spectra=(spectrum, log_even_spectrum, cqt_spectrum),
+            sample_rate=self.sampling.rate,
+            cutoff=self.fft_config.cutoff,
+            titles=("Regular Spectral Density", "Log-Even Spectral Density", "CQT Spectral Density"),
+            colors=("green", "gray", "blue"),
+            figsize=(12, 3),
+            draw_verticals=False,
         )

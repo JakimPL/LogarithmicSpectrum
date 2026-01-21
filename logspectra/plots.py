@@ -24,14 +24,16 @@ def plot_spectrum(
     title: str,
     color: str = "blue",
     edge_color: Optional[str] = None,
+    draw_verticals: bool = True,
 ) -> None:
     """Plot a spectrum histogram with vertical boundaries."""
     if edge_color is None:
         edge_color = color
 
     ax.stairs(spectrum.densities, spectrum.edges, fill=True, color=color, alpha=0.7)
-    for edge in spectrum.edges:
-        ax.axvline(edge, color=edge_color, linewidth=0.5, alpha=0.5)
+    if draw_verticals:
+        for edge in spectrum.edges:
+            ax.axvline(edge, color=edge_color, linewidth=0.5, alpha=0.5)
 
     ax.set_xscale("log")
     ax.set_xlabel("Frequency [Hz]")
@@ -97,6 +99,8 @@ def compare_spectra(
     titles: Sequence[str],
     colors: Optional[Sequence[str]] = None,
     edge_colors: Optional[Sequence[str]] = None,
+    figsize: Tuple[int, int] = (12, 4),
+    draw_verticals: bool = True,
 ) -> None:
     """Compare two spectra side by side."""
     if not len(spectra):
@@ -111,7 +115,7 @@ def compare_spectra(
     if edge_colors is not None and len(edge_colors) != len(spectra):
         raise ValueError("Number of edge colors must match number of spectra")
 
-    _, axes = plt.subplots(1, len(spectra), figsize=(12, 4), squeeze=False)
+    _, axes = plt.subplots(1, len(spectra), figsize=figsize, squeeze=False)
     xrange, xticks = get_spectrum_limits(sample_rate, cutoff)
 
     for i, spectrum in enumerate(spectra):
@@ -127,7 +131,7 @@ def compare_spectra(
             title,
             color=color,
             edge_color=edge_color,
+            draw_verticals=draw_verticals,
         )
 
-    plt.tight_layout()
     plt.show()

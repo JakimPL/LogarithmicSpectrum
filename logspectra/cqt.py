@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 import librosa
 import numpy as np
@@ -8,6 +8,18 @@ from logspectra.constants import BINS_PER_OCTAVE
 from logspectra.histogram import Histogram
 from logspectra.utils import Float, rectangle
 from logspectra.wave import Wave, get_wave_array
+
+
+def get_max_allowed_bins(
+    cutoff: Float,
+    sample_rate: int,
+    bins_per_octave: int = BINS_PER_OCTAVE,
+) -> int:
+    """Calculate the maximum number of CQT bins that won't exceed Nyquist frequency."""
+    nyquist = sample_rate / 2.0
+    max_octaves = np.log2(nyquist / cutoff)
+    max_bins = int(np.floor(max_octaves * bins_per_octave))
+    return max_bins
 
 
 def calculate_nbins(
@@ -46,6 +58,7 @@ def calculate_cqt_spectrum(
     wave: Union[np.ndarray, Wave],
     fft_config: FFTConfig,
     sampling: Sampling,
+    n_bins: Optional[int] = None,
 ) -> Histogram:
     """Calculate the Constant-Q Transform (CQT) spectrum of a wave."""
     if not isinstance(fft_config, FFTConfig):
@@ -59,7 +72,9 @@ def calculate_cqt_spectrum(
     cutoff: float = float(fft_config.cutoff)
     bins_per_octave: int = fft_config.bins_per_octave
 
-    n_bins = calculate_nbins(cutoff, sample_rate, bins_per_octave)
+    n_bins = n_bins or calculate_nbins(cutoff, sample_rate, bins_per_octave)
+    n_bins = min(n_bins, get_max_allowed_bins(cutoff, sample_rate, bins_per_octave))
+
     hop_length = len(wave) + 1  # a single frame
     cqt = librosa.cqt(
         wave,
