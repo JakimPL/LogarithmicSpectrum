@@ -10,6 +10,18 @@ from logspectra.wave import Wave, synthesize_wave
 
 
 class Example(BaseModel):
+    """
+    Example demonstrating different spectrum computation methods.
+
+    Provides convenient methods to generate a synthetic wave and compute its
+    spectrum using different approaches: regular FFT, log-even rebinning, and CQT.
+
+    Attributes:
+        wave_definition: Definition of the synthetic wave (harmonics, phases, frequency).
+        fft_config: FFT configuration (size, cutoff, log components, bins per octave).
+        sampling: Sampling configuration (duration, rate).
+    """
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     wave_definition: WaveDefinition = Field(..., description="Definition of the synthetic wave")
@@ -17,9 +29,25 @@ class Example(BaseModel):
     sampling: Sampling = Field(default_factory=Sampling, description="Sampling configuration")
 
     def wave(self) -> Wave:
+        """
+        Generate the synthetic wave from the wave definition.
+
+        Returns:
+            Synthesized wave with time and amplitude arrays.
+        """
         return synthesize_wave(self.wave_definition, self.sampling)
 
     def spectrum(self, wave: Optional[Wave] = None) -> Histogram:
+        """
+        Calculate the regular FFT power spectrum.
+
+        Args:
+            wave: Optional wave to analyze. If None,
+                generates from wave_definition.
+
+        Returns:
+            Histogram with linearly-spaced frequency bins.
+        """
         return calculate_spectrum(
             wave or self.wave(),
             self.fft_config,
@@ -27,6 +55,16 @@ class Example(BaseModel):
         )
 
     def log_even_spectrum(self, wave: Optional[Wave] = None) -> Histogram:
+        """
+        Calculate the spectrum with logarithmically-spaced bins via rebinning.
+
+        Args:
+            wave: Optional wave to analyze. If None,
+                generates from wave_definition.
+
+        Returns:
+            Histogram with log-spaced frequency bins from FFT rebinning.
+        """
         return calculate_log_spectrum(
             wave or self.wave(),
             self.fft_config,
@@ -34,6 +72,16 @@ class Example(BaseModel):
         )
 
     def cqt_spectrum(self, wave: Optional[Wave] = None) -> Histogram:
+        """
+        Calculate the Constant-Q Transform spectrum.
+
+        Args:
+            wave: Optional wave to analyze. If None,
+                generates from wave_definition.
+
+        Returns:
+            Histogram with log-spaced frequency bins from CQT computation.
+        """
         return calculate_cqt_spectrum(
             wave or self.wave(),
             self.fft_config,
@@ -44,6 +92,16 @@ class Example(BaseModel):
         self,
         wave: Optional[Wave] = None,
     ) -> None:
+        """
+        Compare all three spectrum computation methods side by side.
+
+        Generates a figure with three subplots showing regular FFT,
+        log-even rebinned, and CQT spectra for visual comparison.
+
+        Args:
+            wave: Optional wave to analyze. If None,
+                generates from wave_definition.
+        """
         wave = wave or self.wave()
         spectrum = self.spectrum(wave)
         log_even_spectrum = self.log_even_spectrum(wave)

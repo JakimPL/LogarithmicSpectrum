@@ -10,6 +10,19 @@ from logspectra.types import Float
 
 
 def get_spectrum_limits(sample_rate: int, cutoff: Float) -> Tuple[Tuple[float, float], List[float]]:
+    """
+    Calculate plot limits and tick positions for logarithmic frequency axis.
+
+    Generates octave-based tick positions from cutoff to Nyquist frequency.
+
+    Args:
+        sample_rate: Sampling rate in Hz.
+        cutoff: Minimum frequency in Hz.
+
+    Returns:
+        Tuple of (xrange, xticks) where xrange is (min, max) frequency range
+        and xticks is a list of frequencies at powers of 2 times the cutoff.
+    """
     xticks = [float(2.0**k * cutoff) for k in range(int(np.log2(sample_rate / cutoff)))]
     xrange = float(cutoff), 0.5 * sample_rate
     return xrange, xticks
@@ -25,7 +38,19 @@ def plot_spectrum(
     edge_color: Optional[str] = None,
     draw_verticals: bool = True,
 ) -> None:
-    """Plot a spectrum histogram with vertical boundaries."""
+    """
+    Plot a frequency spectrum on a logarithmic scale.
+
+    Args:
+        ax: Matplotlib axes to plot on.
+        spectrum: Spectrum histogram (edges in Hz, values as energy density).
+        xrange: Frequency range (min, max) for x-axis limits.
+        xticks: Frequency values for x-axis tick positions.
+        title: Plot title.
+        color: Fill color for the spectrum.
+        edge_color: Color for vertical bin edge lines. Defaults to color.
+        draw_verticals: Whether to draw vertical lines at bin edges.
+    """
     if edge_color is None:
         edge_color = color
 
@@ -54,7 +79,26 @@ def compare_spectra(
     figsize: Tuple[int, int] = (12, 4),
     draw_verticals: bool = True,
 ) -> None:
-    """Compare two spectra side by side."""
+    """
+    Compare multiple spectra side by side.
+
+    Creates a figure with subplots for each spectrum, using consistent y-axis
+    scaling for easy comparison.
+
+    Args:
+        spectra: Sequence of spectrum histograms to compare.
+        sample_rate: Sampling rate in Hz.
+        cutoff: Minimum frequency in Hz for x-axis range.
+        titles: Title for each subplot (must match length of spectra).
+        colors: Fill colors for each spectrum. Defaults to blue.
+        edge_colors: Edge line colors for each spectrum. Defaults to colors.
+        figsize: Figure size (width, height) in inches.
+        draw_verticals: Whether to draw vertical lines at bin edges.
+
+    Raises:
+        ValueError: If spectra is empty, or if lengths of titles, colors,
+            or edge_colors don't match the number of spectra.
+    """
     if not len(spectra):
         raise ValueError("At least one spectrum is required")
 

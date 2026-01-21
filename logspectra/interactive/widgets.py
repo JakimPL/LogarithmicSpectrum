@@ -13,10 +13,13 @@ from logspectra.types import FFTSize, SampleRate
 
 def interactive_example(wave_definition: WaveDefinition) -> None:
     """
-    Create interactive widgets to control Example parameters and redraw comparison.
+    Create interactive IPython widgets for spectrum comparison exploration.
+
+    Displays sliders to control FFT parameters and spectrum visualization settings.
+    Updates are triggered when slider values change.
 
     Args:
-        wave_definition: The wave definition to use for all comparisons
+        wave_definition: Wave definition to analyze across different configurations.
     """
     warnings.filterwarnings("ignore")
 
@@ -32,7 +35,19 @@ def interactive_example(wave_definition: WaveDefinition) -> None:
         log_even_components: int,
         bins_per_octave: int,
     ) -> None:
-        """Update the comparison plot with new parameters."""
+        """
+        Callback to update the spectrum comparison plot.
+
+        Creates new Example with updated parameters and redraws the three-way
+        comparison (regular FFT, log-even, and CQT spectra).
+
+        Args:
+            sample_rate: Sampling rate in Hz.
+            fft_size: FFT size (power of 2).
+            cutoff: Cutoff frequency in Hz.
+            log_even_components: Number of log-spaced bins for log-even spectrum.
+            bins_per_octave: Number of bins per octave for CQT.
+        """
         with output:
             output.clear_output(wait=True)
             sampling = Sampling(rate=sample_rate)

@@ -12,6 +12,23 @@ def compare_histogram_and_interval(
     color_histogram: str = "gray",
     color_interval: str = "yellow",
 ) -> None:
+    """
+    Visualize histogram rebinning for a single interval.
+
+    Plots the original histogram and overlays the rebinned value for a single
+    interval, showing how the histogram values contribute to the new bin.
+
+    Args:
+        histogram: Original histogram to visualize.
+        interval: Target interval for rebinning.
+        annotation: Custom annotation text for the rebinned value.
+            If None, shows the value.
+        color_histogram: Color for the histogram bars.
+        color_interval: Color for the interval overlay.
+
+    Raises:
+        ValueError: If interval is empty.
+    """
     if not interval:
         raise ValueError("Interval must be non-empty")
 
